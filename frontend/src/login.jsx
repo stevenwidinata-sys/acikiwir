@@ -20,7 +20,7 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
@@ -43,12 +43,27 @@ export default function App() {
       return;
     }
 
-    if (isSignUpMode) {
-      setSuccessMessage('Registration profile created successfully!');
-      console.log("Registering payload:", { email, password });
-    } else {
-      setSuccessMessage('Authentication identity verified successfully!');
-      console.log("Authenticating payload:", { email, password });
+    try {
+      const endpoint = isSignUpMode ? '/auth/register' : '/auth/login';
+      
+      const response = await fetch(`http://localhost:5000${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      setSuccessMessage(data.message);
+      
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -197,7 +212,7 @@ export default function App() {
       <main style={styles.main}>
         <div style={styles.card}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h2 style={{ margin: '0 0 8px 0', fontSize: '26px', fontWeight: '800', trackingTight: '-0.03em' }}>
+            <h2 style={{ margin: '0 0 8px 0', fontSize: '26px', fontWeight: '800', letterSpacing: '-0.03em' }}>
               {isSignUpMode ? 'Create Account' : 'Welcome Back'}
             </h2>
             <p style={{ margin: 0, fontSize: '14px', color: isDarkMode ? '#71717a' : '#64748b' }}>

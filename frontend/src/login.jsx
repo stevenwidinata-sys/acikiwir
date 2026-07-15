@@ -61,6 +61,15 @@ export default function App() {
       }
 
       setSuccessMessage(data.message);
+
+      if (!isSignUpMode && data.accessToken) {
+
+        localStorage.setItem('accessToken', data.accessToken);
+        
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      }
       
     } catch (err) {
       setError(err.message);

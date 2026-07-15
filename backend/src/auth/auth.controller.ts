@@ -1,42 +1,23 @@
-import { Controller, Post, Body, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  private usersDatabase: any[] = [];
+  constructor(private authService: AuthService) {}
 
   @Post('register')
-  register(@Body() body: any, @Res() res) {
-    const { email, password } = body;
-    
-    const userExists = this.usersDatabase.find(user => user.email === email);
-    if (userExists) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ 
-        message: 'Email is already registered!' 
-      });
-    }
-
-    this.usersDatabase.push({ email, password });
-    return res.status(HttpStatus.CREATED).json({ 
-      message: 'Registration profile created successfully!' 
-    });
+  register(@Body() body: any) {
+    return this.authService.register(
+      body.email,
+      body.password,
+    );
   }
 
   @Post('login')
-  login(@Body() body: any, @Res() res) {
-    const { email, password } = body;
-    
-    const user = this.usersDatabase.find(
-      u => u.email === email && u.password === password
+  login(@Body() body: any) {
+    return this.authService.login(
+      body.email,
+      body.password,
     );
-    
-    if (!user) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ 
-        message: 'Authentication failed. Invalid email or password.' 
-      });
-    }
-
-    return res.status(HttpStatus.OK).json({ 
-      message: 'Authentication identity verified successfully!' 
-    });
   }
 }

@@ -60,13 +60,14 @@ export default function App() {
       }
 
       await login(email, password);
-
-      setSuccessMessage("Login successful!");
+      setSuccessMessage("Login successful! Redirecting...");
+      
       setTimeout(() => {
-        navigate("/dashboard");
-      }, 100);
+        window.location.href = "/dashboard";
+      }, 1000);
+
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      setError(err.message || "Authentication failed. Try again.");
     }
   };
 

@@ -10,7 +10,7 @@ import { JwtStrategy } from './jwt-auth/jwt.strategy';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET,
+      secret: "stacker",
       signOptions: { expiresIn: '1d' },
     }),
   ],

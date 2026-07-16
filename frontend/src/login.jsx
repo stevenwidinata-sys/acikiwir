@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import useAuth from "./context/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -11,6 +13,9 @@ export default function App() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const { login, register } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (isDarkMode) {
@@ -22,6 +27,7 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
     setSuccessMessage("");
 
@@ -46,33 +52,21 @@ export default function App() {
     }
 
     try {
-      const endpoint = isSignUpMode ? "/auth/register" : "/auth/login";
-
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Something went wrong");
+      if (isSignUpMode) {
+        await register(email, password);
+        setSuccessMessage("Registration successful!");
+        setIsSignUpMode(false);
+        return;
       }
 
-      setSuccessMessage(data.message);
+      await login(email, password);
 
-      if (!isSignUpMode && data.accessToken) {
-        localStorage.setItem("accessToken", data.accessToken);
-
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
-      }
+      setSuccessMessage("Login successful!");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 100);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     }
   };
 

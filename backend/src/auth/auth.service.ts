@@ -12,21 +12,21 @@ export class AuthService {
   ) {}
 
   async register(body: AuthDTO) {
-    const email = body.email;
-    const password = body.password;
     const userExists = await this.prisma.user.findUnique({
-      where: { email },
+      where: {
+        email: body.email,
+      },
     });
 
     if (userExists) {
       throw new BadRequestException('Email is already registered!');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(body.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
-        email,
+        email: body.email,
         password: hashedPassword,
       },
     });
@@ -38,24 +38,35 @@ export class AuthService {
   }
 
   async login(body: AuthDTO) {
-    const email = body.email;
-    const password = body.password;
-
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: {
+        email: body.email,
+      },
     });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new BadRequestException(
-        'Authentication failed. Invalid email or password.',
-      );
+    if (!user) {
+      throw new BadRequestException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const match = await bcrypt.compare(body.password, user.password);
+
+    if (!match) {
+      throw new BadRequestException('Invalid credentials');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload);
 
     return {
-      message: 'Authentication identity verified successfully!',
-      accessToken: await this.jwtService.signAsync(payload),
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
     };
   }
 }

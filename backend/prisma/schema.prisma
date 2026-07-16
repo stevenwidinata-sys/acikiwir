@@ -8,10 +8,10 @@ generator client {
 }
 
 model User {
-  id               Int      @id @default(autoincrement()) 
-  email            String   @unique                       
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
   password         String
-  verificationCode String?  
-  isVerified       Boolean  @default(false)              
-  createdAt        DateTime @default(now())              
+  verificationCode String?
+  isVerified       Boolean  @default(false)
+  createdAt        DateTime @default(now())
 }
